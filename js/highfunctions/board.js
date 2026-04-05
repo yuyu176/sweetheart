@@ -157,19 +157,19 @@ function generateEnvelopeReplyText() {
     // 随机分组：有的句子单独一行，有的2~3句拼一起
     const result = [];
     let i = 0;
-    while (i < filtered.length) {
+    while (i < picked.length) {
         const rand = Math.random();
-        if (rand < 0.35 && i + 1 < filtered.length) {
+        if (rand < 0.35 && i + 1 < picked.length) {
             // 35%概率：两句拼一行
-            result.push(filtered[i] + filtered[i + 1]);
+            result.push(picked[i] + picked[i + 1]);
             i += 2;
-        } else if (rand < 0.5 && i + 2 < filtered.length) {
+        } else if (rand < 0.5 && i + 2 < picked.length) {
             // 15%概率：三句拼一行
-            result.push(filtered[i] + filtered[i + 1] + filtered[i + 2]);
+            result.push(picked[i] + picked[i + 1] + picked[i + 2]);
             i += 3;
         } else {
             // 50%概率：单独一行
-            result.push(filtered[i]);
+            result.push(picked[i]);
             i += 1;
         }
     }
