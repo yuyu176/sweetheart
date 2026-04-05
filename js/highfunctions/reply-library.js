@@ -211,9 +211,13 @@ function _renderModernToolbar() {
     let groupFilterHtml = '';
     if (isMainCustom && customReplyGroups && customReplyGroups.length > 0) {
         const allCount = customReplies.length;
-        const ungroupedCount = customReplies.filter(item =>
+        /*const ungroupedCount = customReplies.filter(item =>
             !customReplyGroups.some(g => g.items && g.items.includes(item))
-        ).length;
+        ).length;*/
+        // ✨ 性能优化：用 Set 代替嵌套的 some + includes
+        const groupedTexts = new Set();
+        if (customReplyGroups) customReplyGroups.forEach(g => (g.items || []).forEach(t => groupedTexts.add(t)));
+        const ungroupedCount = customReplies.filter(item => !groupedTexts.has(item)).length;
         groupFilterHtml = `
             <div id="group-filter-pills" style="
                 display:flex;gap:6px;overflow-x:auto;padding:8px 15px 0;
@@ -444,7 +448,7 @@ function _renderModernToolbar() {
     }
 }
 
-function _renderCardViewWithGroups(list, items) {
+/*function _renderCardViewWithGroups(list, items) {
     const disabledSet = _getDisabledItemsSet();
     const itemsWithIdx = items.map((text, idx) => ({
         text,
@@ -492,7 +496,62 @@ function _renderCardViewWithGroups(list, items) {
             _renderCardList(list, filtered, disabledSet);
         }
     }
+}*/
+function _renderCardViewWithGroups(list, items) {
+    const disabledSet = _getDisabledItemsSet();
+    
+    // ✨ 性能优化：建立 O(1) 查找的 Map 和 Set，代替 O(n) 的 indexOf 和 includes
+    const textToIndex = new Map();
+    customReplies.forEach((t, i) => textToIndex.set(t, i));
+    const itemsSet = new Set(items);
+    
+    const itemsWithIdx = items.map((text) => ({ text, idx: textToIndex.get(text) ?? -1 }));
+
+    if (_activeGroupFilter === null) {
+        if (!customReplyGroups || customReplyGroups.length === 0) {
+            _renderCardList(list, itemsWithIdx, disabledSet);
+            return;
+        }
+        const inGroup = new Set();
+        customReplyGroups.forEach(g => {
+            const groupItems = (g.items || [])
+                .map(t => ({ text: t, idx: textToIndex.get(t) ?? -1 }))
+                .filter(x => x.idx >= 0 && itemsSet.has(x.text));
+            groupItems.forEach(x => inGroup.add(x.idx));
+            _renderGroupBlock(list, g, groupItems, disabledSet);
+        });
+        const ungrouped = itemsWithIdx.filter(x => !inGroup.has(x.idx));
+        if (ungrouped.length > 0) {
+            _renderGroupBlock(list, { id: '__ungrouped', name: '未分组', color: '#868E96', disabled: false }, ungrouped, disabledSet, true);
+        }
+    } else if (_activeGroupFilter === 'ungrouped') {
+        const inGroup = new Set();
+        if (customReplyGroups) customReplyGroups.forEach(g => (g.items || []).forEach(t => {
+            const i = textToIndex.get(t);
+            if (i !== undefined) inGroup.add(i);
+        }));
+        const ungrouped = itemsWithIdx.filter(x => !inGroup.has(x.idx));
+        if (ungrouped.length === 0) {
+            list.innerHTML = renderEmptyState('所有字卡均已分组');
+        } else {
+            _renderCardList(list, ungrouped, disabledSet);
+        }
+    } else {
+        const g = customReplyGroups.find(g => g.id === _activeGroupFilter);
+        if (!g) {
+            list.innerHTML = renderEmptyState('分组不存在');
+            return;
+        }
+        const gItemsSet = new Set(g.items || []);
+        const filtered = itemsWithIdx.filter(x => gItemsSet.has(x.text));
+        if (filtered.length === 0) {
+            list.innerHTML = renderEmptyState('此分组暂无内容');
+        } else {
+            _renderCardList(list, filtered, disabledSet);
+        }
+    }
 }
+
 
 function _renderGroupBlock(list, group, groupItems, disabledSet, isUngrouped = false) {
     const section = document.createElement('div');
