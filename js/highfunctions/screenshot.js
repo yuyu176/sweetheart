@@ -676,8 +676,8 @@ function generateTxtFile(msgs) {
     showNotification('TXT 文档已导出', 'success');
 }
 
- 
-/*async function generateScreenshot(msgs) {
+
+async function generateScreenshot(msgs) {
     showNotification('正在生成截图...', 'info');
 
     // 1. 强制等待字体加载完成
@@ -728,7 +728,7 @@ function generateTxtFile(msgs) {
         let partnerAvatarUrl = '';
         if (showAvatar) {
             /*const myAvatarImg = document.querySelector('.user-info:first-child .avatar img');
-            const partnerAvatarImg = document.querySelector('.user-info:last-child .avatar img');
+            const partnerAvatarImg = document.querySelector('.user-info:last-child .avatar img');*/
             // 修正：右侧是用户，左侧是系统
             const myAvatarImg = document.querySelector('.user-info:last-child .avatar img');
             const partnerAvatarImg = document.querySelector('.user-info:first-child .avatar img');
@@ -759,7 +759,7 @@ function generateTxtFile(msgs) {
             /*let bubbleStyleCSS = '';
             if (bubbleStyle === 'rounded') bubbleStyleCSS = 'border-radius: 20px;';
             else if (bubbleStyle === 'rounded-large') bubbleStyleCSS = 'border-radius: 24px;';
-            else if (bubbleStyle === 'square') bubbleStyleCSS = 'border-radius: 8px;';
+            else if (bubbleStyle === 'square') bubbleStyleCSS = 'border-radius: 8px;';*/
             // ✨ 智能提取：直接读取网页上真实气泡的最终计算样式，100% 还原自定义效果
             let sentBubbleComputedCSS = '';
             let recvBubbleComputedCSS = '';
@@ -809,7 +809,7 @@ function generateTxtFile(msgs) {
                 const tsColor = isUser ? 'rgba(255,255,255,0.7)' : textSecondary;
                 const tsAlign = isUser ? 'right' : 'left';
                 timeStrHTML = `<div style="font-size:11px;color:${tsColor};margin-top:5px;text-align:${tsAlign};font-weight:500;opacity:0.7;">${timeStr}</div>`;
-            }
+            }*/
            // 生成时间戳（连续同发送者只在最后一条显示）
             const fmt = settings.timeFormat || 'HH:mm';
             let timeStrHTML = '';
@@ -855,7 +855,7 @@ function generateTxtFile(msgs) {
             const avatarHTML = showAvatar && avatarUrl ? 
                 `<img src="${avatarUrl}" style="width:${avatarSize}px; height:${avatarSize}px; border-radius:${avatarRadius}; object-fit:cover; flex-shrink:0; border: 2px solid rgba(255,255,255,0.3);">` : 
                 (showAvatar ? `<div style="width:${avatarSize}px; height:${avatarSize}px; border-radius:${avatarRadius}; background:${isUser ? accentColor : '#e0e0e0'}; display:flex; align-items:center; justify-content:center; color:${isUser ? '#fff' : '#999'}; font-size:14px; flex-shrink:0; border: 2px solid rgba(255,255,255,0.3);">${isUser ? '我' : 'T'}</div>` : '');
-
+*/
             // 头像 HTML（✨ 修复跨域卡死：过滤外部图床链接）
             const avatarSize = 35;
             const avatarUrl = isUser ? myAvatarUrl : partnerAvatarUrl;
@@ -873,58 +873,7 @@ function generateTxtFile(msgs) {
                 }
             }
 
-            // 拼接消息块
-            /*if (showAvatar) {
-                chatParts.push(`
-                    <div style="margin:16px 0; display:flex; align-items:center; gap:12px; flex-direction:${isUser ? 'row-reverse' : 'row'};">
-                        ${avatarHTML}
-                        <div style="display:inline-block; padding:10px 15px; border-radius:18px; background:${isUser ? accentColor : secondaryBg}; max-width:calc(80% - ${avatarSize + 12}px); color:${isUser ? '#fff' : textPrimary}; text-align:left; font-size:15px; word-break:break-word; ${bubbleStyleCSS} box-shadow: 0 3px 6px rgba(0,0,0,0.1);">
-                            ${replyContent}
-                            ${safeText}
-                            ${timeStrHTML}
-                        </div>
-                    </div>
-                `);
-                chatParts.push(`
-                <div style="margin:16px 0; display:flex; align-items:flex-start; gap:12px; flex-direction:${isUser ? 'row-reverse' : 'row'};">
-                    ${avatarHTML}
-                    <div style="display:flex; flex-direction:column; max-width:calc(80% - ${avatarSize + 12}px); align-items:${isUser ? 'flex-end' : 'flex-start'};">
-                    <div style="display:inline-block; padding:10px 15px; border-radius:18px; background:${isUser ? accentColor : secondaryBg}; color:${isUser ? '#fff' : textPrimary}; text-align:left; font-size:15px; word-break:break-word; ${bubbleStyleCSS} box-shadow: 0 3px 6px rgba(0,0,0,0.1);">
-                        ${replyContent}
-                        ${safeText}
-                    </div>
-                    ${timeStrHTML}
-                    </div>
-                </div>
-            `);
-
-            } else {
-                /*chatParts.push(`
-                    <div style="margin:16px 0; text-align:${isUser ? 'right' : 'left'};">
-                        <div style="display:inline-block; padding:10px 15px; border-radius:18px; background:${isUser ? accentColor : secondaryBg}; max-width:80%; color:${isUser ? '#fff' : textPrimary}; text-align:left; font-size:15px; word-break:break-word; ${bubbleStyleCSS} box-shadow: 0 3px 6px rgba(0,0,0,0.1);">
-                            ${replyContent}
-                            ${safeText}
-                            ${timeStrHTML}
-                        </div>
-                    </div>
-                `);
-                        <div style="display:inline-block; padding:10px 15px; border-radius:18px; background:${isUser ? accentColor : secondaryBg}; max-width:80%; color:${isUser ? '#fff' : textPrimary}; text-align:left; font-size:15px; word-break:break-word; ${bubbleStyleCSS} box-shadow: 0 3px 6px rgba(0,0,0,0.1);">
-                        ${replyContent}
-                        ${safeText}
-                        </div>
-                        
-                    </div>
-                chatParts.push(`
-                    <div style="margin:16px 0; display:flex; flex-direction:column; align-items:${isUser ? 'flex-end' : 'flex-start'};">
-                        <div class="${isUser ? sentBubbleClass : recvBubbleClass}" style="display:inline-block; max-width:80%; text-align:left; word-break:break-word; ${isUser ? sentBubbleComputedCSS : recvBubbleComputedCSS}">
-                            ${replyContent}
-                            ${safeText}
-                        </div>
-                        ${timeStrHTML}
-                    </div>
-                `);
-            }
-                       // 拼接消息块
+             // 拼接消息块
             if (showAvatar) {
                 chatParts.push(`
                 <div style="margin:16px 0; display:flex; align-items:flex-start; gap:12px; flex-direction:${isUser ? 'row-reverse' : 'row'};">
@@ -983,7 +932,7 @@ function generateTxtFile(msgs) {
             const injectStyle = document.createElement('style');
             injectStyle.textContent = customBubbleStyle.textContent;
             tempContainer.insertBefore(injectStyle, tempContainer.firstChild);
-        }
+        }*/
         document.body.appendChild(tempContainer);
 
         // 生成截图
@@ -1001,21 +950,7 @@ function generateTxtFile(msgs) {
                 }
                 return false;
             },
-            /*onclone: (clonedDoc) => {
-                const clonedContainer = clonedDoc.body.querySelector('div[style*="width: 375px"]');
-                const style = clonedDoc.createElement('style');
-                style.textContent = ` * { font-family: ${fontFamily} !important; } `;
-                if (clonedContainer) {
-                    clonedContainer.insertBefore(style, clonedContainer.firstChild);
-                }
-                document.head.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
-                    const newLink = clonedDoc.createElement('link');
-                    newLink.rel = 'stylesheet';
-                    newLink.href = link.href;
-                    clonedDoc.head.appendChild(newLink);
-                });
-            }
-                       onclone: (clonedDoc) => {
+            onclone: (clonedDoc) => {
                 const clonedContainer = clonedDoc.body.querySelector('div[style*="width: 375px"]');
                 
                 // 1. 注入基础字体
@@ -1059,8 +994,9 @@ function generateTxtFile(msgs) {
             document.body.removeChild(tempContainer);
         }
     }
-}*/
-async function generateScreenshot(msgs) {
+}
+
+/*async function generateScreenshot(msgs) {
     showNotification('正在生成截图...', 'info');
 
     // 1. 强制等待字体加载完成
@@ -1080,15 +1016,13 @@ async function generateScreenshot(msgs) {
         const messageLineHeight = computedStyle.getPropertyValue('--message-line-height').trim() || '1.5';
         const showAvatar = localStorage.getItem('screenshot-show-avatar') === 'true';
 
-        // 背景设置（安全判断，过滤外部图床防止白屏）
+        // ✨ 修复1：直接原样读取背景，不再暴力拦截
         let bgStyle = `background-color: ${primaryBg};`;
         const bgImageVar = computedStyle.getPropertyValue('--chat-bg-image').trim();
-        if (bgImageVar && bgImageVar !== 'none' && (bgImageVar.startsWith('data:') || bgImageVar.startsWith('url("data:'))) {
+        if (bgImageVar && bgImageVar !== 'none') {
             bgStyle = `background-image: ${bgImageVar}; background-size: 100% auto; background-position: top center; background-repeat: repeat-y;`;
         } else if (settings.backgroundUrl) {
-            if (settings.backgroundUrl.startsWith('data:') || settings.backgroundUrl.startsWith(window.location.origin)) {
-                bgStyle = `background-image: url('${settings.backgroundUrl}'); background-size: 100% auto; background-position: top center; background-repeat: repeat-y;`;
-            }
+            bgStyle = `background-image: url('${settings.backgroundUrl}'); background-size: 100% auto; background-position: top center; background-repeat: repeat-y;`;
         }
 
         // 消息按时间正序排列
@@ -1099,9 +1033,7 @@ async function generateScreenshot(msgs) {
         const lastDate = new Date(sortedMsgs[sortedMsgs.length - 1].timestamp).toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', year: 'numeric' });
         let dateTitle = firstDate === lastDate ? firstDate : `${firstDate} - ${lastDate}`;
 
-        // ==========================================
-        // ✨ 终极方案：直接克隆真实的 DOM 节点，放弃手写 HTML
-        // ==========================================
+        // 真实 DOM 克隆
         const clonedFragments = document.createDocumentFragment();
         
         sortedMsgs.forEach(msg => {
@@ -1119,12 +1051,23 @@ async function generateScreenshot(msgs) {
                     avatars.forEach(av => av.remove());
                 }
                 
-                // 3. 提前把外部图床图片替换成占位符（防止 html2canvas 卡死白屏）
+                // ✨ 修复2：只处理外部图床图片，且尽量保留原有 class 和圆角样式
                 clone.querySelectorAll('img').forEach(img => {
                     if (img.src && !img.src.startsWith('data:') && !img.src.startsWith(window.location.origin)) {
                         const placeholder = document.createElement('div');
-                        placeholder.style.cssText = `width:100px; height:100px; background:#eee; display:flex; align-items:center; justify-content:center; color:#999; font-size:12px; border-radius:4px;`;
-                        placeholder.textContent = '[图片]';
+                        placeholder.className = img.className; // 继承原本的 class（比如圆角）
+                        // 继承原本的宽高和圆角
+                        ['width', 'height', 'borderRadius', 'border'].forEach(prop => {
+                            if (img.style[prop]) placeholder.style[prop] = img.style[prop];
+                        });
+                        placeholder.style.display = 'flex';
+                        placeholder.style.alignItems = 'center';
+                        placeholder.style.justifyContent = 'center';
+                        placeholder.style.background = '#eee';
+                        placeholder.style.color = '#999';
+                        placeholder.style.fontSize = '12px';
+                        placeholder.style.overflow = 'hidden';
+                        placeholder.textContent = '[图]';
                         img.replaceWith(placeholder);
                     }
                 });
@@ -1136,6 +1079,8 @@ async function generateScreenshot(msgs) {
         // 创建一个离屏容器
         tempContainer = document.createElement('div');
         const phoneWidth = 375;
+        
+        // ✨ 修复3：去掉了 overflow: hidden;，给气泡的小角留出显示空间！
         tempContainer.style.cssText = `
             position:fixed; left:-9999px; top:0; width:${phoneWidth}px; 
             ${bgStyle} 
@@ -1166,7 +1111,7 @@ async function generateScreenshot(msgs) {
         const canvas = await html2canvas(tempContainer, {
             backgroundColor: null,
             scale: 2, 
-            useCORS: false,
+            useCORS: true, 
             logging: false,
             windowWidth: phoneWidth,
             allowTaint: true,
@@ -1179,7 +1124,7 @@ async function generateScreenshot(msgs) {
             onclone: (clonedDoc) => {
                 const clonedContainer = clonedDoc.body.querySelector('div[style*="width: 375px"]');
                 
-                // 1. 把主页面所有的外部 <link> CSS 搬过来
+                // 1. 复制外部 CSS
                 document.head.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
                     const newLink = clonedDoc.createElement('link');
                     newLink.rel = 'stylesheet';
@@ -1187,7 +1132,7 @@ async function generateScreenshot(msgs) {
                     clonedDoc.head.appendChild(newLink);
                 });
 
-                // 2. 把主页面所有的内部 <style>（你的自定义气泡CSS、全局CSS等）全部原封不动搬过来！
+                // 2. 复制内部自定义 CSS（包含小角伪元素的代码）
                 document.head.querySelectorAll('style').forEach(style => {
                     const newStyle = clonedDoc.createElement('style');
                     newStyle.textContent = style.textContent;
@@ -1195,20 +1140,51 @@ async function generateScreenshot(msgs) {
                 });
 
                 if (clonedContainer) {
-                    // 3. 强制覆盖字体
-                    const fontStyle = clonedDoc.createElement('style');
-                    fontStyle.textContent = ` * { font-family: ${fontFamily} !important; } `;
-                    clonedContainer.insertBefore(fontStyle, clonedContainer.firstChild);
+                    // 3. ✨ 修复4：二次兜底清理外部图，但绝不乱杀背景和已读标识
+                    clonedContainer.querySelectorAll('img').forEach(img => {
+                        if (img.src && !img.src.startsWith('data:') && !img.src.startsWith(window.location.origin)) {
+                            const placeholder = clonedDoc.createElement('div');
+                            placeholder.textContent = '[图]';
+                            placeholder.style.cssText = `width:100px; height:100px; background:#eee; display:flex; align-items:center; justify-content:center; color:#999; font-size:12px; border-radius:4px;`;
+                            img.replaceWith(placeholder);
+                        }
+                    });
 
-                    // 4. 隐藏不需要截进去的交互元素（比如删除按钮、悬浮特效等）
+                    // 4. 强制覆盖字体 & ✨ 修复5：只隐藏操作按钮，保留已读标识！
+                    // 4. 强制覆盖字体 & 隐藏不需要的交互元素
                     const hideStyle = clonedDoc.createElement('style');
                     hideStyle.textContent = `
-                        .meta-action-btn, .favorite-action-btn, .message-meta-actions, 
-                        .read-receipt-icon, .typing-indicator { display: none !important; }
+                        * { font-family: ${fontFamily} !important; }
+                        .meta-action-btn, .favorite-action-btn, .message-meta-actions, .typing-indicator { display: none !important; }
                         .message-wrapper.selected { outline: none !important; background: transparent !important; }
+                        
+                         ✨ 阴影补偿：强制把浓度拉高，对抗 html2canvas 的变淡 Bug 
+                        .message-sent, .message.user .message-bubble, [class*="sent"] {
+                            box-shadow: 0 4px 12px rgba(0,0,0, 0.25) !important;
+                        }
+                        .message-received, .message.partner .message-bubble, [class*="received"] {
+                            box-shadow: 0 4px 12px rgba(0,0,0, 0.18) !important;
+                        }
                     `;
                     clonedContainer.insertBefore(hideStyle, clonedContainer.firstChild);
                 }
+                        // ===== 【强制修复】遍历所有气泡，强制从真实DOM读取并覆盖样式 =====
+                const clonedBubbles = clonedContainer.querySelectorAll('.message-bubble');
+                clonedBubbles.forEach(bubble => {
+                    // 尝试通过父级ID找到对应的真实元素
+                    const wrapper = bubble.closest('.message-wrapper');
+                    const realWrapper = wrapper ? document.querySelector(`.message-wrapper[data-id="${wrapper.dataset.id}"]`) : null;
+                    const realBubble = realWrapper ? realWrapper.querySelector('.message-bubble') : null;
+
+                    if (realBubble) {
+                        const cs = getComputedStyle(realBubble);
+                        // 直接将真实DOM的计算样式写入内联样式，使用 important 防止被覆盖
+                        bubble.style.setProperty('background', cs.background, 'important');
+                        bubble.style.setProperty('background-color', cs.backgroundColor, 'important');
+                        bubble.style.setProperty('color', cs.color, 'important');
+                        bubble.style.setProperty('box-shadow', cs.boxShadow, 'important');
+                    }
+                });
             }
         });
 
@@ -1225,7 +1201,8 @@ async function generateScreenshot(msgs) {
             document.body.removeChild(tempContainer);
         }
     }
-}
+}*/
+
 
 
 /**

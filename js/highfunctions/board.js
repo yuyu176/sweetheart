@@ -352,7 +352,7 @@ window.sendBoardMessage = function() {
   // 关闭撰写框，刷新列表
   hideModal(document.getElementById('board-compose-modal'));
   renderEnvelopeBoard();
-  showNotification(`留言已发布，预计 ${Math.floor(randomHours)} 小时后收到回复 ✉️`, 'success');
+  showNotification(`留言已发布，预计 ${Math.floor(randomHours)} 小时后收到回复 📌`, 'success');
 };
 
 
