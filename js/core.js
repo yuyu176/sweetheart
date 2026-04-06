@@ -880,7 +880,7 @@ function manageAutoSendTimer() {
             showNotification('背景图片已移除', 'success');
         };
 
-        window.scrollToQuotedMessage = function(el) {
+        /*window.scrollToQuotedMessage = function(el) {
             const id = el.getAttribute('data-reply-id');
             if (!id) return;
             const tryScroll = () => {
@@ -908,6 +908,48 @@ function manageAutoSendTimer() {
                     setTimeout(tryScroll, 150);
                 } else {
                     if (typeof showNotification === 'function') showNotification('消息可能已被删除', 'info');
+                }
+            }
+        };*/
+        window.scrollToQuotedMessage = function(el) {
+            const id = el.getAttribute('data-reply-id');
+            if (!id) return;
+            const tryScroll = () => {
+                const target = document.querySelector(`[data-msg-id="${id}"]`);
+                if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                target.classList.add('msg-highlight');
+                setTimeout(() => target.classList.remove('msg-highlight'), 1500);
+                return true;
+                }
+                return false;
+            };
+            if (!tryScroll()) {
+                // 消息没在当前屏幕里，尝试去历史记录里找
+                const msgIndex = messages.findIndex(m => String(m.id) === String(id));
+                if (msgIndex === -1) {
+                if (typeof showNotification === 'function') showNotification('消息可能已被删除', 'info');
+                return;
+                }
+                const needed = messages.length - msgIndex;
+                if (needed > displayedMessageCount) {
+                // 【防卡顿保护】如果消息太老了（比如超过1500条），只加载1500条，防止浏览器直接卡死
+                if (needed > 1500) {
+                    if (typeof showNotification === 'function') showNotification('该消息年代过于久远，为防卡顿已限制加载量', 'info', 2500);
+                    displayedMessageCount = 1500;
+                } else {
+                    displayedMessageCount = needed;
+                }
+                
+                // 【防抖动核心】拉起刹车，阻止 renderMessages 里的“自动滚到底部”动作
+                window._preventAutoScroll = true;
+                renderMessages(false);
+                window._preventAutoScroll = false;
+                
+                // 等DOM稍微稳定一下，然后直接平滑滚到目标消息
+                setTimeout(tryScroll, 50);
+                } else {
+                if (typeof showNotification === 'function') showNotification('消息可能已被删除', 'info');
                 }
             }
         };
@@ -1152,13 +1194,23 @@ function manageAutoSendTimer() {
 
             container.appendChild(fragment);
 
-            if (preserveScroll) {
+            /*if (preserveScroll) {
                 const newScrollHeight = container.scrollHeight;
                 const delta = newScrollHeight - oldScrollHeight;
                 container.scrollTop = Math.max(0, container.scrollTop + delta);
             } else {
                 requestAnimationFrame(() => {
                     container.scrollTop = container.scrollHeight;
+                });
+            }*/
+             if (preserveScroll) {
+                const newScrollHeight = container.scrollHeight;
+                const delta = newScrollHeight - oldScrollHeight;
+                container.scrollTop = Math.max(0, container.scrollTop + delta);
+            } else if (!window._preventAutoScroll) {
+                // 如果搜索跳转时设置了 _preventAutoScroll，就不执行滚到底部，防止抖动
+                requestAnimationFrame(() => {
+                container.scrollTop = container.scrollHeight;
                 });
             }
         }        
@@ -1353,7 +1405,7 @@ function manageAutoSendTimer() {
                             const _tiW = document.getElementById('typing-indicator-wrapper');
                             if (_tiW) { const _tiInner = _tiW.querySelector('.typing-indicator'); if (_tiInner) { _tiInner.classList.add('hiding'); setTimeout(() => { _tiW.style.display = 'none'; if (_tiInner) _tiInner.classList.remove('hiding'); }, 240); } else { _tiW.style.display = 'none'; } }
                         }, randomDelay * 0.4);
-                    }*/
+                    }
                          // Cancel any pending reply timer and reset it (so rapid messages don't stack replies)
                     const shouldIgnore = settings.allowReadNoReply && (Math.random() <(settings.readNoReplyChance || 0.2));
 
@@ -1407,8 +1459,34 @@ function manageAutoSendTimer() {
                         window._pendingReplyTimer = null;
                         simulateReply();
                         }, randomDelay);
+                    }*/
+                    // 判断是否触发“不回复”概率
+                    const shouldIgnore = settings.allowReadNoReply && (Math.random() < (settings.readNoReplyChance || 0.2));
+                    
+                    if (!shouldIgnore) {
+                        // 【准备回复】：先显示“正在输入中”，等时间到了去调 simulateReply
+                        if (settings.typingIndicatorEnabled) {
+                        const tiWrapper = document.getElementById('typing-indicator-wrapper');
+                        const tiLabel = document.getElementById('typing-indicator-label');
+                        const tiAvatar = document.getElementById('typing-indicator-avatar');
+                        if (tiLabel) tiLabel.textContent = (settings.partnerName || '对方') + ' 正在输入';
+                        if (tiWrapper) {
+                            positionTypingIndicator();
+                            tiWrapper.style.display = 'block';
+                        }
+                        if (tiAvatar) {
+                            const partnerImg = DOMElements.partner.avatar.querySelector('img');
+                            tiAvatar.innerHTML = partnerImg ? `<img src="${partnerImg.src}">` : '<i class="fas fa-user"></i>';
+                        }
+                        if (DOMElements.chatContainer) DOMElements.chatContainer.scrollTop = DOMElements.chatContainer.scrollHeight;
+                        }
+                        
+                        window._pendingReplyTimer = setTimeout(() => {
+                        window._pendingReplyTimer = null;
+                        simulateReply(); // 👈 神奇魔法在这里：它一启动，就会自动把前面所有未读的一起改成已读！
+                        }, randomDelay);
                     }
-
+                    // 如果 shouldIgnore 为 true，这里什么都不写！它就会乖乖保持“未读”，直到主动发消息或下次回复。
                 }
             };
 
