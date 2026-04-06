@@ -2130,6 +2130,7 @@ async function handleLegacyImport(importedData) {
         document.body.appendChild(overlay);
         const closeDialog = () => overlay.remove();
         overlay.onclick = (e) => { if(e.target === overlay) closeDialog(); };
+        document.getElementById('_imp_cancel').onclick = closeDialog;
         // 给模式按钮绑定切换高亮样式的事件
         const overwriteLabel = document.getElementById('mode-overwrite-label');
         const appendLabel = document.getElementById('mode-append-label');
