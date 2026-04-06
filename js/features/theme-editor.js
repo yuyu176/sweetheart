@@ -551,6 +551,7 @@ function populateThemeSelector() {
             if (scheme.chatBackground) {
                 applyBackground(scheme.chatBackground);
                 safeSetItem(getStorageKey('chatBackground'), scheme.chatBackground);
+                localforage.setItem(getStorageKey('chatBackground'), scheme.chatBackground); 
             }
 
             updateUI();
