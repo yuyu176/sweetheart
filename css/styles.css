@@ -6129,6 +6129,10 @@
         .anniversary-type-btn:hover {
             transform: translateY(-2px);
         }
+
+        #anniversary-modal.edit-mode .ann-item-card { border: 1.5px dashed #ff4757 !important; }
+        #anniversary-modal.edit-mode .ann-item-card::before { background: #ff4757 !important; }
+
         .player-container {
             position: fixed;
             top: 100px;
@@ -10493,6 +10497,7 @@ html[data-theme="dark"] .period-stat-value { color: var(--accent-color-dark); }
   overflow: hidden;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+  flex-shrink: 0;
 }
 
 .board-card:hover {

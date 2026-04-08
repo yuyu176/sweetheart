@@ -106,7 +106,7 @@ autoSendInterval: 5,
         soundVolume: 0.15,
         bottomCollapseMode: false,
         emojiMixEnabled: true,
-        enterToSendEnabled: false,
+        boardPartnerWriteEnabled: false,
             };
         }
 
@@ -384,7 +384,8 @@ const loadData = async () => {
         setTimeout(() => {
             applyAllAvatarFrames();
             manageAutoSendTimer(); 
-            checkEnvelopeStatus(); 
+            //checkEnvelopeStatus(); 
+            if (typeof checkEnvelopeStatus === 'function') checkEnvelopeStatus();
             updateUI();
         }, 100);
 
@@ -474,7 +475,7 @@ function _backupCriticalData() {
     try {
         const backupPayload = {
             ts: Date.now(),
-            messages: messages.slice(-200), // 只备份最近200条，避免过大
+            messages: messages.filter(m => !m.image).slice(-200), // 过滤掉图片，只备份纯文字防撑爆
             settings: settings,
             sessionId: SESSION_ID,
             anniversaries: anniversaries,
@@ -1686,6 +1687,7 @@ function manageAutoSendTimer() {
         }
 
 function showModal(modalElement, focusElement = null) {
+    if (!modalElement) return; 
             if (modalElement._hideTimeout) {
                 clearTimeout(modalElement._hideTimeout);
                 modalElement._hideTimeout = null;
@@ -1765,8 +1767,9 @@ function exportChatHistory(isAllMode = false) {
             else sub = '(空)';
         }
 
-        const checked = (item.core || isAllMode) ? 'checked' : '';
-        
+        const checked = isAllMode ? 'checked' : ''; // 选择性备份不再默认勾选任何项，全量备份才默认全选
+
+       
         return `
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;border:1px solid var(--border-color);border-radius:12px;background:var(--primary-bg);font-size:13px;color:var(--text-primary);">
             <input type="checkbox" data-export-id="${item.id}" ${checked} style="accent-color:var(--accent-color);width:15px;height:15px;">
@@ -1795,11 +1798,38 @@ function exportChatHistory(isAllMode = false) {
 
     // 绑定事件
     const closeDialog = () => overlay.remove();
+     // 动态监听：实时检测是否勾选了内容，控制按钮状态和红字提示
+   const checkBtn = document.getElementById('_exp_confirm');
+    const allCbs = overlay.querySelectorAll('input[data-export-id]');
+    const warningTip = document.createElement('div');
+    warningTip.id = '_exp_warning';
+    warningTip.style.cssText = 'font-size:12px;color:#FF3B30;text-align:center;margin-top:-6px;margin-bottom:6px;height:16px;opacity:0;transition:opacity 0.2s;';
+    warningTip.textContent = '⚠️ 请至少选择一项内容';
+    checkBtn.parentNode.insertBefore(warningTip, checkBtn);
+
+    function updateExpBtnState() {
+        let checkedCount = 0;
+        allCbs.forEach(cb => { if (cb.checked) checkedCount++; });
+        
+        if (checkedCount > 0) {
+            checkBtn.style.opacity = '1';
+            checkBtn.style.pointerEvents = 'auto';
+            warningTip.style.opacity = '0';
+        } else {
+            checkBtn.style.opacity = '0.5';
+            checkBtn.style.pointerEvents = 'none'; // 直接禁用点击，连错都不用犯
+            warningTip.style.opacity = '1';
+        }
+    }
+    allCbs.forEach(cb => cb.addEventListener('change', updateExpBtnState));
+    updateExpBtnState(); // 初始化执行一次
+
     overlay.onclick = (e) => { if(e.target === overlay) closeDialog(); };
     document.getElementById('_exp_cancel').onclick = closeDialog;
 
+
     document.getElementById('_exp_confirm').onclick = function() {
-        closeDialog();
+        //closeDialog();
         const exportObj = { version: '4.0-auto', appName: 'ChatApp', date: new Date().toISOString() };
         
         // 遍历注册表，检查是否被选中
@@ -1841,7 +1871,6 @@ function exportChatHistory(isAllMode = false) {
         }
     };
 }
-
 
 // 辅助函数：将简写 ID 映射回全局变量名
 window._getKeyFromId = function(id) {
@@ -2105,12 +2134,14 @@ async function handleLegacyImport(importedData) {
                         }
                     } else {
                         // ========= 覆盖模式逻辑（保持原样） =========
-                        if (reg.onImport) {
+                        if (reg.id === 'envelopeData' && typeof window.setBoardDataV2 === 'function') {
+                            window.setBoardDataV2(importedData[reg.id]);
+                        } else if (reg.onImport) {
                             reg.onImport(importedData[reg.id]);
                         } else {
                             _setRegVal(reg.id, importedData[reg.id]);
                         }
-                        if (reg.id === 'messages' || reg.id === 'settings') reloadNeeded = true;
+
                     }
                 }
             });

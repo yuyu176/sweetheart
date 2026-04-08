@@ -4,6 +4,7 @@
 
 // 当前正在编辑的纪念日ID（用于区分新增/编辑）
 let currentEditAnnId = null;
+window.isAnnEditMode = false;
 
 window.selectAnnType = function(type) {
     currentAnniversaryType = type;
@@ -180,7 +181,7 @@ function addAnniversary() {
     const customMessage = customMsgEl ? customMsgEl.value.trim() : '';
 
     // 编辑或新增逻辑
-    if (currentEditAnnId) {
+   /* if (currentEditAnnId) {
         const index = anniversaries.findIndex(a => a.id === currentEditAnnId);
         if (index > -1) {
             anniversaries[index].name = name;
@@ -202,7 +203,39 @@ function addAnniversary() {
     }
 
     throttledSaveData();
+    renderAnniversariesList();*/
+    let justSavedAnn = null;
+
+    if (currentEditAnnId) {
+        const index = anniversaries.findIndex(a => a.id === currentEditAnnId);
+        if (index > -1) {
+            anniversaries[index].name = name;
+            anniversaries[index].date = date;
+            anniversaries[index].type = type;
+            anniversaries[index].remindRules = remindRules;
+            anniversaries[index].customMessage = customMessage;
+            justSavedAnn = anniversaries[index];
+            currentEditAnnId = null;
+        }
+    } else {
+        const newAnn = {
+            id: Date.now(),
+            name: name,
+            date: date,
+            type: type,
+            remindRules: remindRules,
+            customMessage: customMessage
+        };
+        anniversaries.push(newAnn);
+        justSavedAnn = newAnn;
+    }
+    throttledSaveData();
     renderAnniversariesList();
+    // 保存后，头部卡片显示刚编辑/新增的那一条
+    if (justSavedAnn) {
+        fillAnnHeaderCard(justSavedAnn);
+    }
+
 
     // 清空
     if (nameInput) nameInput.value = '';
@@ -271,7 +304,7 @@ function renderAnniversariesList() {
 
         // 点击卡片 -> 进入编辑模式
         const html = `
-        <div class="ann-item-card ${typeClass}" data-ann-id="${ann.id}" onclick="editAnnCard(${ann.id})" style="cursor:pointer;">
+        <div class="ann-item-card ${typeClass}" data-ann-id="${ann.id}" onclick="isAnnEditMode ? editAnnCard(${ann.id}) : selectAnnCard(${ann.id})" style="cursor:pointer;">
             <div class="ann-item-left">
                 <div class="ann-item-name">${ann.name}</div>
                 <div class="ann-item-date">
@@ -464,6 +497,34 @@ function initSpecialDaySystem() {
     }
 }
 
+window.toggleAnnEditMode = function() {
+    window.isAnnEditMode = !window.isAnnEditMode;
+    const btn = document.getElementById('ann-edit-mode-btn');
+    const modal = document.getElementById('anniversary-modal');
+    
+    // 按钮变红 / 彻底清除颜色恢复灰色
+    if (btn) {
+        if (window.isAnnEditMode) {
+            btn.style.color = '#ff4757';
+        } else {
+            btn.style.color = 'var(--text-secondary)'; // 把你内联写的那句话还回去
+        }
+    }
+    
+    // 虚线样式开关
+    if (modal) {
+        modal.classList.toggle('edit-mode', window.isAnnEditMode);
+    }
+    
+    // 通知
+    if (window.isAnnEditMode) {
+        showNotification('已进入编辑模式', 'info');
+    } else {
+        showNotification('已退出编辑模式', 'info');
+    }
+};
+
+
 
 function initAnniversaryModule() {
     const entryBtn = document.getElementById('anniversary-function');
@@ -510,6 +571,7 @@ function initAnniversaryModule() {
         closeEditorBtn.onclick = () => {
             if (editorSlide) editorSlide.classList.remove('active');
             currentEditAnnId = null;
+            //if (window.isAnnEditMode) window.toggleAnnEditMode();
         };
     }
 
@@ -543,7 +605,60 @@ function initAnniversaryModule() {
             reader.readAsDataURL(file);
             e.target.value = '';
         });
-    }
+        }
+    window.startInlineEdit = function(id, event) {
+        if (event) event.stopPropagation();
+        const ann = anniversaries.find(a => a.id === id);
+        if (!ann) return;
+
+        const card = document.querySelector(`.ann-item-card[data-ann-id="${id}"]`);
+        if (!card) return;
+
+        card.classList.remove('type-past', 'type-future');
+        card.innerHTML = `
+            <div class="ann-item-left">
+                <input class="ann-inline-input" id="inline-name-${id}" value="${ann.name}" placeholder="名称" />
+                <div class="ann-item-date">
+                    <input class="ann-inline-input" id="inline-date-${id}" type="date" value="${ann.date}" />
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+                <button class="ann-inline-save" onclick="event.stopPropagation(); saveInlineEdit(${id})" title="保存">
+                    <i class="fas fa-check"></i>
+                </button>
+                <button class="ann-inline-cancel" onclick="event.stopPropagation(); renderAnniversariesList()" title="取消">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+
+        const nameInput = document.getElementById(`inline-name-${id}`);
+        if (nameInput) { nameInput.focus(); nameInput.select(); }
+
+        card.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); saveInlineEdit(id); }
+            if (e.key === 'Escape') { renderAnniversariesList(); }
+        });
+    };
+
+    window.saveInlineEdit = function(id) {
+        const nameEl = document.getElementById(`inline-name-${id}`);
+        const dateEl = document.getElementById(`inline-date-${id}`);
+        const name = nameEl ? nameEl.value.trim() : '';
+        const date = dateEl ? dateEl.value : '';
+
+        if (!name || !date) { showNotification('请填写名称和日期', 'error'); return; }
+
+        const index = anniversaries.findIndex(a => a.id === id);
+        if (index > -1) {
+            anniversaries[index].name = name;
+            anniversaries[index].date = date;
+            throttledSaveData();
+            renderAnniversariesList();
+            fillAnnHeaderCard(anniversaries[index]);
+            showNotification('重要日已更新', 'success');
+        }
+    };
 
     // 启动检测系统
     initSpecialDaySystem();

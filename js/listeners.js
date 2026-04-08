@@ -560,6 +560,8 @@ document.getElementById('chat-settings').addEventListener('click', () => {
     const autoToggle = document.getElementById('auto-send-toggle');
     if (autoToggle) autoToggle.classList.toggle('active', !!settings.autoSendEnabled);
     updateAutoSendUI();
+    const boardWriteToggle = document.getElementById('board-partner-write-toggle');
+    if (boardWriteToggle) boardWriteToggle.classList.toggle('active', !!settings.boardPartnerWriteEnabled);
     updateDelayUI();
     updateRnrUI(); 
     const immToggle = document.getElementById('immersive-toggle');
@@ -1363,6 +1365,22 @@ document.getElementById('chat-settings').addEventListener('click', () => {
             manageAutoSendTimer(); 
                 throttledSaveData();
             });
+            const boardWriteToggle = document.getElementById('board-partner-write-toggle');
+            if (boardWriteToggle) {
+                boardWriteToggle.addEventListener('click', () => {
+                    settings.boardPartnerWriteEnabled = !settings.boardPartnerWriteEnabled;
+                    boardWriteToggle.classList.toggle('active', settings.boardPartnerWriteEnabled);
+                    
+                    // 同步开启留言板内部的自动发帖开关
+                    if (window.boardDataV2) {
+                    window.boardDataV2.settings.autoPostEnabled = settings.boardPartnerWriteEnabled;
+                    window.setBoardDataV2(window.boardDataV2);
+                    }
+                    
+                    throttledSaveData();
+                    showNotification(`主动写留言板已${settings.boardPartnerWriteEnabled ? '开启' : '关闭'}`, 'success');
+                });
+            }
 
             const resetBgBtn = document.getElementById('reset-default-bg');
             if (resetBgBtn) {

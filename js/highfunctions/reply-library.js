@@ -1924,6 +1924,54 @@ function _makeOverlay() {
         showNotification(`✓ 添加 ${added} 条${skipped ? `，跳过 ${skipped} 条重复` : ''}`, 'success');
     };
 }*/
+function _showQuickGroupPicker(items, callback) {
+  const overlay = _makeOverlay();
+  const panel = document.createElement('div');
+  panel.style.cssText = `background:var(--secondary-bg);border-radius:22px;padding:22px;width:92%;max-width:340px;box-shadow:0 24px 80px rgba(0,0,0,.45);animation:popIn 0.22s cubic-bezier(.34,1.56,.64,1);`;
+  
+  panel.innerHTML = `
+  <style>@keyframes popIn { from{opacity:0;transform:scale(.93)} to{opacity:1;transform:scale(1)} }</style>
+    <div style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:14px;">添加到分组</div>
+    <div style="display:flex;flex-direction:column;gap:7px;max-height:50vh;overflow-y:auto;margin-bottom:14px;">
+      ${customReplyGroups.map((g, i) => `
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;border-radius:11px;border:1.5px solid var(--border-color);background:var(--primary-bg);">
+          <input type="radio" name="qgp" value="${i}" style="accent-color:${g.color};">
+          <span style="width:9px;height:9px;border-radius:50%;background:${g.color||'#aaa'};flex-shrink:0;"></span>
+          <span style="flex:1;font-size:13px;color:var(--text-primary);font-weight:600;">${g.name}</span>
+          <span style="font-size:11px;color:var(--text-secondary);">${(g.items||[]).length} 条</span>
+        </label>
+      `).join('')}
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button id="qgp-cancel" style="flex:1;padding:11px;border:1.5px solid var(--border-color);border-radius:12px;background:none;color:var(--text-secondary);font-size:13px;cursor:pointer;font-family:var(--font-family);">不分组</button>
+      <button id="qgp-save" style="flex:2;padding:11px;border:none;border-radius:12px;background:var(--accent-color);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-family);">确认</button>
+    </div>
+  `;
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
+  
+  // 点"不分组"或点空白：直接关掉，什么都不做（字卡已经在池子里了）
+  const doCancel = () => { overlay.remove(); callback(); };
+  panel.querySelector('#qgp-cancel').onclick = doCancel;
+  overlay.addEventListener('click', e => { if (e.target === overlay) doCancel(); });
+  
+  // 选了分组点确认：把字卡塞进对应分组
+  panel.querySelector('#qgp-save').onclick = () => {
+    const checked = panel.querySelector('input[name="qgp"]:checked');
+    if (checked) {
+      const group = customReplyGroups[parseInt(checked.value)];
+      if (group) {
+        if (!group.items) group.items = [];
+        items.forEach(t => { if (!group.items.includes(t)) group.items.push(t); });
+        throttledSaveData();
+        showNotification(`✓ 已添加到「${group.name}」`, 'success');
+      }
+    }
+    overlay.remove();
+    callback();
+  };
+}
+
 function _showBatchAddDialog() {
     const overlay = _makeOverlay();
     const panel = document.createElement('div');
@@ -1980,6 +2028,7 @@ function _showBatchAddDialog() {
         if (!lines.length) { showNotification('请输入内容', 'warning'); return; }
 
         let added = 0, skipped = 0;
+        let addedItems = [];
         lines.forEach(val => {
             // 开场动画必须包含 | 分隔符
             if (currentSubTab === 'intros' && !val.includes('|')) {
@@ -2003,11 +2052,18 @@ function _showBatchAddDialog() {
             }
             targetArr.push(val);
             added++;
+            addedItems.push(val);
         });
 
         throttledSaveData();
         overlay.remove();
         renderReplyLibrary();
+        // 如果是主字卡，且真的加进去了新内容，且存在分组，就问一句放哪
+        if (currentSubTab === 'custom' && addedItems.length > 0 && customReplyGroups && customReplyGroups.length > 0) {
+            _showQuickGroupPicker(addedItems, () => renderReplyLibrary());
+        } else {
+            renderReplyLibrary();
+        }
         let msg = `✓ 添加 ${added} 条`;
         if (skipped > 0) {
             msg += currentSubTab === 'intros'

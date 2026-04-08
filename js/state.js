@@ -169,8 +169,8 @@ window.APP_DATA_REGISTRY = [
         name: '留言板', 
         icon: 'fa-solid fa-thumbtack', 
         backup: true,
-        getValue: () => typeof envelopeData !== 'undefined' ? envelopeData : [],
-        setValue: (v) => { if(typeof envelopeData !== 'undefined') envelopeData = v; }
+        getValue: () => typeof window.boardDataV2 !== 'undefined' ? window.boardDataV2 : { myThreads: [], partnerThreads: [], boardReplyPool: [], settings: {} },
+        setValue: (v) => { if (typeof window.setBoardDataV2 === 'function') window.setBoardDataV2(v); }
     },
     { 
         id: 'moodDiaryData', 
@@ -275,7 +275,7 @@ window.APP_DATA = {
         'customThemes': () => typeof customThemes !== 'undefined' ? customThemes : [],
         'themeSchemes': () => typeof themeSchemes !== 'undefined' ? themeSchemes : [],
         // 新功能：请根据你的实际变量名添加
-        'envelopeData': () => typeof envelopeData !== 'undefined' ? envelopeData : [],
+        'envelopeData': () => typeof window.boardDataV2 !== 'undefined' ? window.boardDataV2 : { myThreads: [], partnerThreads: [], boardReplyPool: [], settings: {} },
         'moodDiaryData': () => typeof moodDiaryData !== 'undefined' ? moodDiaryData : [],
         'divinationHistory': () => typeof divinationHistory !== 'undefined' ? divinationHistory : [],
     },
@@ -298,7 +298,7 @@ window.APP_DATA = {
         'savedBackgrounds': (v) => { if(typeof savedBackgrounds !== 'undefined') savedBackgrounds = v; },
         'customThemes': (v) => { if(typeof customThemes !== 'undefined') customThemes = v; },
         'themeSchemes': (v) => { if(typeof themeSchemes !== 'undefined') themeSchemes = v; },
-        'envelopeData': (v) => { if(typeof envelopeData !== 'undefined') envelopeData = v; },
+        'envelopeData': (v) => { if (typeof window.setBoardDataV2 === 'function') window.setBoardDataV2(v); },
         'moodDiaryData': (v) => { if(typeof moodDiaryData !== 'undefined') moodDiaryData = v; },
         'divinationHistory': (v) => { if(typeof divinationHistory !== 'undefined') divinationHistory = v; },
     }
