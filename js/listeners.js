@@ -166,15 +166,30 @@ function initChatActionListeners() {
         throttledSaveData();
     });
     // 新的发送逻辑
-    DOMElements.sendBtn.addEventListener('click', () => {
-    const text = DOMElements.messageInput.value.trim();
-    const imageFile = DOMElements.imageInput.files[0];
-    if (text || imageFile) {
-       DOMElements.messageInput.dataset.keepFocus = window._keepKeyboardAlive ? '1' : '0';
-        sendMessage(); // 直接调用，不需要判断了
-    }
-});
-
+   /* DOMElements.sendBtn.addEventListener('click', (e) => {
+        e.preventDefault(); // 🔥 关键！阻止浏览器默认的抢焦点行为
+        const text = DOMElements.messageInput.value.trim();
+        const imageFile = DOMElements.imageInput.files[0];
+        if (text || imageFile) {
+        DOMElements.messageInput.dataset.keepFocus = window._keepKeyboardAlive ? '1' : '0';
+            sendMessage(); // 直接调用，不需要判断了
+        }
+    });*/
+      // 🛡️ 终极防线：使用 mousedown 抢跑！
+    DOMElements.sendBtn.addEventListener('mousedown', (e) => {
+        const text = DOMElements.messageInput.value.trim();
+        const imageFile = DOMElements.imageInput.files[0];
+        if (text || imageFile) {
+            // 1. 瞬间打上保活标记（此时焦点还在输入框，稳如泰山！）
+            DOMElements.messageInput.dataset.keepFocus = window._keepKeyboardAlive ? '1' : '0';
+            // 2. 发送消息
+            sendMessage();
+        }
+        // 3. 杀死浏览器的默认行为，绝不允许它再触发后续的焦点夺夺和 click 事件！
+        e.preventDefault(); 
+        e.stopPropagation(); 
+        return false;
+    });
 
 // ========== 继续回复弹出按钮组逻辑 ==========
     const continueBtn = document.getElementById('continue-btn');

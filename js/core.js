@@ -484,10 +484,15 @@ function _backupCriticalData() {
         };
         
         const json = JSON.stringify(backupPayload);
-        localStorage.setItem(_BACKUP_PREFIX + 'critical', json);
-        localStorage.setItem(_BACKUP_PREFIX + 'timestamp', String(Date.now()));
+        //localStorage.setItem(_BACKUP_PREFIX + 'critical', json);
+        //localStorage.setItem(_BACKUP_PREFIX + 'timestamp', String(Date.now()));
         
-        console.log(`[backup] 已备份 ${backupPayload.messages.length} 条消息`);
+        //console.log(`[backup] 已备份 ${backupPayload.messages.length} 条消息`);
+        setTimeout(() => {
+            localStorage.setItem(_BACKUP_PREFIX + 'critical', json);
+            localStorage.setItem(_BACKUP_PREFIX + 'timestamp', String(Date.now()));
+            console.log(`[backup] 已备份 ${backupPayload.messages.length} 条消息`);
+        }, 0);
     } catch (e) {
         console.warn('[backup] 备份失败:', e);
         // 如果存储空间不足，尝试清理旧备份
@@ -1379,7 +1384,7 @@ function manageAutoSendTimer() {
             //DOMElements.messageInput.blur();
             // 🌟 键盘保活模式：静默清空，绝对不触发 blur
             // 🔥 核心改动：完全以标记为准，不再跟其他设置耦合
-            if (DOMElements.messageInput.dataset.keepFocus) {
+            if (DOMElements.messageInput.dataset.keepFocus === '1') {
                 // 用户主动开启了保活：静默清空，绝对不触发 blur
                 DOMElements.messageInput.value = '';
                 DOMElements.messageInput.style.height = '46px';
