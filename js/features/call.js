@@ -665,7 +665,7 @@ html:not([data-theme="dark"])[data-color-theme="black-white"] .message-sent{
         setTimeout(() => {input.value = prev; input.value = ''; }, 150); // 建议稍微延长到 150ms，确保 mousedown 的异步发送逻辑已经读取到值
     }*/
     function sendCallMsg(dur) {
-        if (dur < 2000) return;
+        if (dur < 100) return;
         
         // ✅ 彻底抛弃 input.value 和 send.click()，直接写库！
         const msgText = `📹 视频通话已结束 · ${fmt(dur)}`;
