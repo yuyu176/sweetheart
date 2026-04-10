@@ -178,7 +178,6 @@ function initChatActionListeners() {
             }
         }
     });
-}
 
 // ========== 继续回复弹出按钮组逻辑 ==========
     const continueBtn = document.getElementById('continue-btn');
@@ -248,7 +247,7 @@ function initChatActionListeners() {
             continueSubBtns.classList.remove('active');
         }
     });
-
+}
 function initModalListeners() {
     const modals = document.querySelectorAll('.modal');
     modals.forEach(modal => {
