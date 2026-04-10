@@ -1695,7 +1695,7 @@ document.getElementById('chat-settings').addEventListener('click', () => {
             });*/
             // 回车发送消息功能（Shift+Enter依然是换行）
             DOMElements.messageInput.addEventListener('keydown', (e) => {
-                if (settings.enterToSendEnabled && e.key === 'Enter' && !e.ShiftKey) {
+                if (settings.enterToSendEnabled && e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault(); // 阻止默认的换行
                     DOMElements.messageInput.dataset.keepFocus = window._keepKeyboardAlive ? '1' : '0';
                     const text = DOMElements.messageInput.value.trim();
