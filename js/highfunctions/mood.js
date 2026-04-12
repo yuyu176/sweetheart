@@ -124,7 +124,7 @@ function checkPartnerDailyMood() {
 
     if (!moodData[dateStr].partner && moodData[dateStr].partnerChecked === undefined) {
         moodData[dateStr].partnerChecked = true;
-        if (Math.random() < 0.20) {
+        if (Math.random() < 0.15) {
             saveMoodData();
             return;
         }
